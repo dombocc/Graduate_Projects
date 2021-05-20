@@ -1,0 +1,84 @@
+import pandas as pd
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split
+from sklearn import metrics
+import os
+
+from sklearn import tree
+from sklearn.tree import export_graphviz
+from sklearn.externals.six import StringIO
+from IPython.display import Image
+import pydotplus
+
+data = pd.read_csv("cs-training.csv")
+
+data.loc[data["NumberOfTime30-59DaysPastDueNotWorse"] <=10, "times_delinquent30-59"] = 2 
+data.loc[data["NumberOfTime30-59DaysPastDueNotWorse"] <=3, "times_delinquent30-59"] = 1
+data.loc[data["NumberOfTime30-59DaysPastDueNotWorse"] >10, "times_delinquent30-59"] = 3
+data.loc[data["NumberOfTime60-89DaysPastDueNotWorse"] <=10, "times_delinquent60-89"] = 2
+data.loc[data["NumberOfTime60-89DaysPastDueNotWorse"] <=3, "times_delinquent60-89"] = 1
+data.loc[data["NumberOfTime60-89DaysPastDueNotWorse"] >10, "times_delinquent60-89"] = 3
+data.loc[data["NumberOfTimes90DaysLate"] <=10, "times_delinquent90"] = 2
+data.loc[data["NumberOfTimes90DaysLate"] <=3, "times_delinquent90"] = 1
+data.loc[data["NumberOfTimes90DaysLate"] >10, "times_delinquent90"] = 3
+data.loc[data["NumberOfDependents"] <=14, "catNumberOfDependents"] = 2
+data.loc[data["NumberOfDependents"] <=2, "catNumberOfDependents"] = 1
+data.loc[data["NumberOfDependents"] >4, "catNumberOfDependents"] = 3
+data.loc[data["NumberRealEstateLoansOrLines"] <=10, "catNumberRealEstateLoansOrLines"] = 2
+data.loc[data["NumberRealEstateLoansOrLines"] <=3, "catNumberRealEstateLoansOrLines"] = 1
+data.loc[data["NumberRealEstateLoansOrLines"] >10, "catNumberRealEstateLoansOrLines"] = 3
+data.loc[data["NumberOfOpenCreditLinesAndLoans"] <=10, "catNumberOfOpenCreditLinesAndLoans"] = 2
+data.loc[data["NumberOfOpenCreditLinesAndLoans"] <=3, "catNumberOfOpenCreditLinesAndLoans"] = 1
+data.loc[data["NumberOfOpenCreditLinesAndLoans"] >10, "catNumberOfOpenCreditLinesAndLoans"] = 3
+data.loc[data["MonthlyIncome"] <=800000, "catMonthlyIncome"] = 2
+data.loc[data["MonthlyIncome"] <=30000, "catMonthlyIncome"] = 1
+data.loc[data["MonthlyIncome"] >80000, "catMonthlyIncome"] = 3
+data.loc[data["DebtRatio"] <=.66, "catDebtRatio"] = 2
+data.loc[data["DebtRatio"] <=.33, "catDebtRatio"] = 1
+data.loc[data["DebtRatio"] >.66, "catDebtRatio"] = 3
+data.loc[data["age"] <=50, "catage"] = 2
+data.loc[data["age"] <=30, "catage"] = 1
+data.loc[data["age"] >50, "catage"] = 3
+data.loc[data["SeriousDlqin2yrs"] > 0, "catSeriousDlqin2yrs"] = 1
+data.loc[data["SeriousDlqin2yrs"] < 1, "catSeriousDlqin2yrs"] = 0
+data.loc[data["RevolvingUtilizationOfUnsecuredLines"] <=.6, "catRevolvingUtilizationOfUnsecuredLines"] = 2
+data.loc[data["RevolvingUtilizationOfUnsecuredLines"] <=.3, "catRevolvingUtilizationOfUnsecuredLines"] = 1
+data.loc[data["RevolvingUtilizationOfUnsecuredLines"] >.6, "catRevolvingUtilizationOfUnsecuredLines"] = 3
+
+df = data[["catMonthlyIncome", "times_delinquent30-59", "times_delinquent60-89", "times_delinquent90", 
+           "catNumberOfDependents", "catNumberRealEstateLoansOrLines", "catNumberOfOpenCreditLinesAndLoans",
+           "catDebtRatio", "catage", "catSeriousDlqin2yrs", "catRevolvingUtilizationOfUnsecuredLines"]]
+
+df = df.dropna()
+
+X = df[["times_delinquent30-59", "times_delinquent60-89", "times_delinquent90", 
+           "catNumberOfDependents", "catNumberRealEstateLoansOrLines", "catNumberOfOpenCreditLinesAndLoans",
+           "catDebtRatio", "catage", "catSeriousDlqin2yrs", "catRevolvingUtilizationOfUnsecuredLines"]]
+Y = df[["catMonthlyIncome"]]
+
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=1)
+
+clf = DecisionTreeClassifier()
+
+clf = clf.fit(X_train, Y_train)
+
+Y_pred = clf.predict(X_test)
+
+print("Accuracy:", metrics.accuracy_score(Y_test, Y_pred))
+
+
+dot_data = StringIO()
+feature_columns = ["times_delinquent30-59", "times_delinquent60-89", "times_delinquent90", 
+           "catNumberOfDependents", "catNumberRealEstateLoansOrLines", "catNumberOfOpenCreditLinesAndLoans",
+           "catDebtRatio", "catage", "catSeriousDlqin2yrs", "catRevolvingUtilizationOfUnsecuredLines"]
+
+export_graphviz(clf, out_file=dot_data, filled=True, rounded=True, special_characters=True, 
+                feature_names=feature_columns, class_names=["0","1","2"])
+
+graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
+
+
+
+
+
+

@@ -1,0 +1,3 @@
+This report uses a multiple linear regression model to analyze hypothesis test on a series of electric bills for cost, outside temperature, and overall kw-h consumption. 
+
+I found that having a new pump was statistically insignificant when comparing cost and both temperature and having a new pump were not statistically appropriate to study when comparing electric bills. Consumption was the only factor that was statistically when comparing electric bills which is makes sense as the more electricity you use, the greater your bill overall. 
